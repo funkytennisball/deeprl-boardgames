@@ -1,0 +1,7 @@
+Episodes: 100000
+LearningRate: 0.01
+BatchSize: 100
+MemoryMaxSize: 100000
+InputDimension: 9
+DiscountRate: 0.9
+SaveFile: 'model.h5'
