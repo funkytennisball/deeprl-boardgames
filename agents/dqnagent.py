@@ -53,9 +53,9 @@ class DQNAgent:
         else:
             return available_moves[move_index], act_values
 
-    def remember(self, state, cur_scores, action, next_state, game_state,):
+    def remember(self, state, target, action, next_state, game_state, score):
         """ Stores given state, action, next_state, game_state pair in the memory """
-        self.memory.append((state, cur_scores, action, next_state, game_state))
+        self.memory.append((state, target, action, next_state, game_state, score))
 
     def learn(self):
         """ Learns given states in memory set """
@@ -65,11 +65,11 @@ class DQNAgent:
 
         sample = random.sample(self.memory, batch_size)
 
-        for i, (state, target, action, next_state, game_state) in enumerate(sample):
+        for i, (state, target, action, next_state, game_state, score) in enumerate(sample):
             input_state = state.reshape(-1, 9).copy()
             input_next_state = next_state.reshape(-1, 9).copy()
 
-            reward = DQNAgent.tictactoe_reward(game_state)
+            reward = DQNAgent.tictactoe_reward(game_state, score)
 
             if game_state == GameState.ONGOING:
                 target[action] = reward + self.gamma * \

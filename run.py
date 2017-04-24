@@ -10,25 +10,30 @@ Usage:
 import sys
 import getopt
 
-from ai.ai2048 import AI2048
+import yaml
 
+from ai.ai2048 import AI2048
+from games.game2048.game2048_interface import Game2048Interface
 
 def program_quit():
     """ exists program and provides instructions """
     print('Run Instructions:')
     print('run.py '
           '-g <game [tictactoe|2048]> '
-          '-m <mode [play|learn]> '
+          '-m <mode [aiplay|play|learn]> '
           '-c <config_file[default=config.yml]> ')
     sys.exit(2)
 
 
-def program_action(config_file, game, play_mode):
+def program_action(config, game, play_mode):
     ''' invoke ai '''
     if game == '2048':
-        ai_2048 = AI2048(config_file)
-        if play_mode == 'play':
+        ai_2048 = AI2048(config)
+        if play_mode == 'aiplay':
             ai_2048.play()
+        elif play_mode == 'play':
+            interface = Game2048Interface()
+            interface.play()
         elif play_mode == 'learn':
             ai_2048.learn()
         else:
@@ -61,7 +66,9 @@ def main(argv):
     if config_file is None or game is None or play_mode is None:
         program_quit()
 
-    program_action(config_file, game, play_mode)
+    with open(config_file, 'r') as ymlfile:
+        config = yaml.load(ymlfile)
+        program_action(config, game, play_mode)
 
 
 if __name__ == "__main__":

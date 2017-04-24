@@ -5,13 +5,10 @@ from abc import ABC, abstractmethod
 import random
 from collections import deque
 
-from keras.models import Sequential, load_model
-from keras.layers import Dense
-from keras.optimizers import Adam
+from keras.models import load_model
 
 import numpy as np
 
-from games.tictactoe.tictactoe import GameState
 
 class BaseAgent(ABC):
     """ DQN agent, wrapper for keras """
@@ -25,13 +22,14 @@ class BaseAgent(ABC):
         self.memory = deque(maxlen=self.config['MemoryMaxSize'])
         self.gamma = self.config['DiscountRate']
 
-    def remember(self, state, cur_scores, action, next_state, score, game_state, game_end):
+    def remember(self, state, cur_scores, action, next_state, score, game_state):
         """ Stores given state, action, next_state, game_state pair in the memory """
-        self.memory.append((state, cur_scores, action, next_state, score, game_state, game_end))
+        self.memory.append(
+            (state, cur_scores, action, next_state, score, game_state))
 
     def act(self, state):
         """ DQN agent will decide on the action given a particular state """
-        input_state = state.reshape(-1, self.input_dim).copy()
+        input_state = np.array([state])
         act_values = self.model.predict(input_state)[0]
 
         return np.argmax(act_values), act_values
@@ -44,21 +42,20 @@ class BaseAgent(ABC):
 
         sample = random.sample(self.memory, batch_size)
 
-        for i, (state, target, action, next_state, score, game_state, game_end) in enumerate(sample):
-            input_state = state.reshape(-1, self.input_dim).copy()
-            input_next_state = next_state.reshape(-1, self.input_dim).copy()
+        for i, (state, target, action, next_state, score, game_state) in enumerate(sample):
+            input_state = np.array([state])
+            input_next_state = np.array([next_state])
 
             reward = self.get_reward(score, game_state)
-
-            if game_end:
-                target[action] = reward + self.gamma * \
-                                 np.amax(self.model.predict(input_next_state)[0])
-            else:
-                target[action] = reward
+            target[action] = self.compute_target(reward, game_state, input_next_state)
 
             X[i], Y[i] = input_state, target
 
         self.model.fit(X, Y, batch_size=batch_size, epochs=1, verbose=0)
+
+    @abstractmethod
+    def compute_target(self, reward, game_state, input_next_state):
+        pass
 
     @abstractmethod
     def get_reward(self, score, game_state):

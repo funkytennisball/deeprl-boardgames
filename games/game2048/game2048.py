@@ -11,6 +11,7 @@ class Game2048:
         """ Game State of the 2048 game """
         ONGOING = 0
         ENDED = 1
+        STALL = 2
 
     class Action(Enum):
         """ Actions representing keyboard actions """
@@ -43,7 +44,7 @@ class Game2048:
         for _ in range(2):
             self.add_random_tile()
 
-        return self.game_state, self.board
+        return self.board, self.game_state
 
     def add_random_tile(self):
         """ adds a random tile on the game board with a probability of 0.9 for 2, 0.1 for 4 """
@@ -72,18 +73,34 @@ class Game2048:
 
         if self.board != next_board:
             self.board = next_board
+            self.game_score += step_score
 
             self.add_random_tile()
             self.check_game_status()
+        else:
+            self.game_state = Game2048.GameState.STALL
 
-        return self.board, self.game_state, step_score
+        return next_board, self.game_state, step_score
 
     def check_game_status(self):
         """ checks if the game has ended """
-        if len(self.get_available_tiles()) == 0:
+        if self.no_moves_available():
             self.game_state = Game2048.GameState.ENDED
         else:
             self.game_state = Game2048.GameState.ONGOING
+
+    def no_moves_available(self):
+        """ check if no moves are available to be executed """
+
+        # check availability of zero tiles
+        if len(self.get_available_tiles()) > 0:
+            return False
+            
+        # check if able to move horizontally
+        for i in range(3):
+            if self.board[4*i] == self.board[4*i + 1] or
+                self.board[4*i+1] == self.board[4*i+2] or
+                self.board[4*i+2] == self.board[4*i+3] or
 
     def get_available_tiles(self):
         """ returns all the possible moves """
@@ -100,10 +117,12 @@ class Game2048:
         elif move == Game2048.Action.UP or move == Game2048.Action.DOWN:
             flipped_grid = [[grid[j][i]
                              for j in range(len(grid))] for i in range(len(grid))]
-            next_grid = [Game2048.process_row(
+            temp_grid = [Game2048.process_row(
                 flipped_grid[i], move) for i in range(len(grid))]
-            res = [[next_grid[j][i]
-                    for j in range(len(grid))] for i in range(len(grid))]
+
+            # flip grid back
+            res = [([temp_grid[j][0][i] for j in range(len(grid))],
+                    temp_grid[i][1]) for i in range(len(grid))]
 
         next_row = [val[0] for _, val in enumerate(res)]
         add_score = sum(val[1] for val in res)

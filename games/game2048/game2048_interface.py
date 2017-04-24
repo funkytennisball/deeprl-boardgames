@@ -2,6 +2,7 @@
 
 from .game2048 import Game2048
 
+
 class Game2048Interface:
     """ main class for the interface """
 
@@ -18,24 +19,25 @@ class Game2048Interface:
                 move = input('Move (w/a/s/d):')
 
                 if move == 'w':
-                    self.game.player_action(Game2048.Action.UP)
+                    self.game.step(Game2048.Action.UP)
                 elif move == 'a':
-                    self.game.player_action(Game2048.Action.LEFT)
+                    self.game.step(Game2048.Action.LEFT)
                 elif move == 's':
-                    self.game.player_action(Game2048.Action.DOWN)
+                    self.game.step(Game2048.Action.DOWN)
                 elif move == 'd':
-                    self.game.player_action(Game2048.Action.RIGHT)
+                    self.game.step(Game2048.Action.RIGHT)
             except ValueError:
                 print('input valid value (w/a/s/d)')
 
     def print_board(self):
         """ prints the board of the 2048 game on the console """
 
+        scoreboard = 'GameScore: ' + str(self.game.game_score)
         board_str = ''
         for i in range(self.game.col_size):
-            board_str += str(self.game.board[i*4]) + '\t' + \
-                         str(self.game.board[i*4 + 1]) + '\t' + \
-                         str(self.game.board[i*4 + 2]) + '\t' + \
-                         str(self.game.board[i*4 + 3]) + '\n'
+            board_str += str(self.game.board[i * 4]) + '\t' + \
+                str(self.game.board[i * 4 + 1]) + '\t' + \
+                str(self.game.board[i * 4 + 2]) + '\t' + \
+                str(self.game.board[i * 4 + 3]) + '\n'
 
-        print(board_str)
+        print(scoreboard + '\n' + board_str)
