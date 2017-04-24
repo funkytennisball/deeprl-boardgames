@@ -13,10 +13,11 @@ import numpy as np
 class BaseAgent(ABC):
     """ DQN agent, wrapper for keras """
 
-    def __init__(self, config, input_dim, mode_learn=True):
+    def __init__(self, config, input_dim, output_dim, mode_learn=True):
         self.config = config
         self.model = None
         self.input_dim = input_dim
+        self.output_dim = output_dim
         self.mode_learn = mode_learn
 
         self.memory = deque(maxlen=self.config['MemoryMaxSize'])
@@ -38,7 +39,7 @@ class BaseAgent(ABC):
         """ Learns given states in memory set """
         batch_size = min(len(self.memory), self.config['BatchSize'])
         X = np.zeros((batch_size, self.input_dim))  # pylint: disable=C0103
-        Y = np.zeros((batch_size, self.input_dim))  # pylint: disable=C0103
+        Y = np.zeros((batch_size, self.output_dim))  # pylint: disable=C0103
 
         sample = random.sample(self.memory, batch_size)
 

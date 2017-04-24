@@ -15,10 +15,10 @@ class Game2048:
 
     class Action(Enum):
         """ Actions representing keyboard actions """
-        LEFT = 1
-        UP = 2      # pylint: disable=C0103
-        RIGHT = 3
-        DOWN = 4
+        LEFT = 0
+        UP = 1      # pylint: disable=C0103
+        RIGHT = 2
+        DOWN = 3
 
     def __init__(self):
         # Parameters
@@ -34,6 +34,16 @@ class Game2048:
 
         # Initialization
         self.reset()
+
+    def __str__(self):
+        board_str = ''
+        for i in range(self.col_size):
+            board_str += str(self.board[i * 4]) + '\t' + \
+                str(self.board[i * 4 + 1]) + '\t' + \
+                str(self.board[i * 4 + 2]) + '\t' + \
+                str(self.board[i * 4 + 3]) + '\n'
+
+        return board_str
 
     def reset(self):
         """ resets the 2048 game state """
@@ -58,12 +68,10 @@ class Game2048:
 
     def step(self, move):
         """ process a movement from the user """
-        if self.game_state != Game2048.GameState.ONGOING:
+        if self.game_state == Game2048.GameState.ENDED:
             return
 
-        grid = [[self.board[i * 4], self.board[i * 4 + 1],
-                 self.board[i * 4 + 2], self.board[i * 4 + 3]]
-                for i in range(self.col_size)]
+        grid = self.get_grid()
 
         next_grid, step_score = Game2048.process_move(grid, move)
         next_board = []
@@ -82,6 +90,16 @@ class Game2048:
 
         return next_board, self.game_state, step_score
 
+    def get_grid(self):
+        """ Gets game board in grid format """
+        return [[self.board[i * 4], self.board[i * 4 + 1],
+                 self.board[i * 4 + 2], self.board[i * 4 + 3]]
+                for i in range(self.col_size)]
+
+    def get_max_tile(self):
+        """ Gets maximum tile attained from game """
+        return max(self.board)
+
     def check_game_status(self):
         """ checks if the game has ended """
         if self.no_moves_available():
@@ -89,18 +107,41 @@ class Game2048:
         else:
             self.game_state = Game2048.GameState.ONGOING
 
+    def available_moves(self):
+        """ returns all available moves """
+
+        available_moves = []
+
+        grid = self.get_grid()
+        for move in Game2048.Action:
+            next_grid, _ = Game2048.process_move(grid, move)
+            if grid != next_grid:
+                available_moves.append(move)
+
+        return available_moves
+
     def no_moves_available(self):
         """ check if no moves are available to be executed """
 
         # check availability of zero tiles
-        if len(self.get_available_tiles()) > 0:
+        if self.get_available_tiles():
             return False
-            
+
         # check if able to move horizontally
+        for i in range(4):
+            if self.board[4 * i] == self.board[4 * i + 1] or \
+                    self.board[4 * i + 1] == self.board[4 * i + 2] or \
+                    self.board[4 * i + 2] == self.board[4 * i + 3]:
+                return False
+
         for i in range(3):
-            if self.board[4*i] == self.board[4*i + 1] or
-                self.board[4*i+1] == self.board[4*i+2] or
-                self.board[4*i+2] == self.board[4*i+3] or
+            if self.board[4 * i] == self.board[4 * i + 4] or \
+                    self.board[4 * i + 1] == self.board[4 * i + 5] or \
+                    self.board[4 * i + 2] == self.board[4 * i + 6] or \
+                    self.board[4 * i + 3] == self.board[4 * i + 7]:
+                return False
+
+        return True
 
     def get_available_tiles(self):
         """ returns all the possible moves """

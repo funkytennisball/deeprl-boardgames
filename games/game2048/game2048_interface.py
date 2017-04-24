@@ -12,7 +12,7 @@ class Game2048Interface:
     def play(self):
         """ plays the game of 2048 until it ends """
 
-        while self.game.game_state == Game2048.GameState.ONGOING:
+        while self.game.game_state != Game2048.GameState.ENDED:
             self.print_board()
 
             try:
@@ -33,11 +33,6 @@ class Game2048Interface:
         """ prints the board of the 2048 game on the console """
 
         scoreboard = 'GameScore: ' + str(self.game.game_score)
-        board_str = ''
-        for i in range(self.game.col_size):
-            board_str += str(self.game.board[i * 4]) + '\t' + \
-                str(self.game.board[i * 4 + 1]) + '\t' + \
-                str(self.game.board[i * 4 + 2]) + '\t' + \
-                str(self.game.board[i * 4 + 3]) + '\n'
+        board_str = str(self.game)
 
         print(scoreboard + '\n' + board_str)
