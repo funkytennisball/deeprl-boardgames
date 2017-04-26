@@ -3,7 +3,9 @@
 from abc import ABC, abstractmethod
 
 import random
+import operator
 from collections import deque
+from bisect import bisect
 
 from keras.models import load_model
 
@@ -28,12 +30,30 @@ class BaseAgent(ABC):
         self.memory.append(
             (state, cur_scores, action, next_state, score, game_state))
 
-    def act(self, state):
+    def act(self, state, available_moves):
         """ DQN agent will decide on the action given a particular state """
         input_state = np.array([state])
         act_values = self.model.predict(input_state)[0]
 
-        return np.argmax(act_values), act_values
+        if self.mode_learn:
+            pow_act_values = [
+                (i, 2 ** val) for i, val in enumerate(act_values) if i in available_moves]
+            sum_act_values = sum(act_value for (
+                _, act_value) in pow_act_values)
+            adj_act_values = [(move, act_value / sum_act_values)
+                              for (move, act_value) in pow_act_values]
+
+            rand_sel = random.random()
+
+            cumulative = 0
+            for (move, act_value) in adj_act_values:
+                cumulative += act_value
+                if rand_sel <= cumulative:
+                    return move, act_values
+        else:
+            move, _ = max([(i, val) for i, val in enumerate(
+                act_values) if i in available_moves], key=operator.itemgetter(1))
+            return move, act_values
 
     def learn(self):
         """ Learns given states in memory set """
@@ -48,7 +68,9 @@ class BaseAgent(ABC):
             input_next_state = np.array([next_state])
 
             reward = self.get_reward(score, game_state)
-            target[action] = self.compute_target(reward, game_state, input_next_state)
+
+            target[action] = self.compute_target(
+                reward, game_state, input_next_state)
 
             X[i], Y[i] = input_state, target
 

@@ -28,13 +28,16 @@ def program_quit():
 def program_action(config, game, play_mode):
     ''' invoke ai '''
     if game == '2048':
-        ai_2048 = AI2048(config)
         if play_mode == 'aiplay':
-            ai_2048.play()
+            ai_2048 = AI2048(config, False)
+            ai_2048.load()
+            interface = Game2048Interface(ai_2048)
+            interface.play()
         elif play_mode == 'play':
             interface = Game2048Interface()
             interface.play()
         elif play_mode == 'learn':
+            ai_2048 = AI2048(config, True)
             ai_2048.learn()
         else:
             program_quit()

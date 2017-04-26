@@ -14,8 +14,8 @@ class BaseAI(ABC):
         return 'data/' + self.config['SaveFile']
 
     @abstractmethod
-    def play(self):
-        ''' base method for play. Used to play defined game with AI '''
+    def move(self):
+        ''' base method for move. used to determine ai selected move for a game '''
         pass
 
     @abstractmethod
