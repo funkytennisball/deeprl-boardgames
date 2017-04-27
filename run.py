@@ -13,20 +13,22 @@ import getopt
 import yaml
 
 from ai.ai2048 import AI2048
+from ai.ai_cartpole import AICartPole
 from games.game2048.game2048_interface import Game2048Interface
 
 def program_quit():
     """ exists program and provides instructions """
     print('Run Instructions:')
     print('run.py '
-          '-g <game [tictactoe|2048]> '
-          '-m <mode [aiplay|play|learn]> '
           '-c <config_file[default=config.yml]> ')
     sys.exit(2)
 
 
-def program_action(config, game, play_mode):
+def program_action(config):
     ''' invoke ai '''
+    game = config['Game']
+    play_mode = config['PlayMode']
+
     if game == '2048':
         if play_mode == 'aiplay':
             ai_2048 = AI2048(config, False)
@@ -41,18 +43,21 @@ def program_action(config, game, play_mode):
             ai_2048.learn()
         else:
             program_quit()
+    elif game == 'cartpole':
+        if play_mode == 'learn':
+            ai_cartpole = AICartPole(config, True)
+            ai_cartpole.learn()
     else:
         program_quit()
 
 
 def main(argv):
     """ parses argument list from user """
+    # Default config file
     config_file = 'config.yml'
-    game = None
-    play_mode = None
 
     try:
-        opts, _ = getopt.getopt(argv, 'hc:g:m:')
+        opts, _ = getopt.getopt(argv, 'h:c:')
     except getopt.GetoptError:
         program_quit()
 
@@ -61,17 +66,11 @@ def main(argv):
             program_quit()
         elif opt == '-c':
             config_file = arg
-        elif opt == '-g':
-            game = arg
-        elif opt == '-m':
-            play_mode = arg
-
-    if config_file is None or game is None or play_mode is None:
-        program_quit()
 
     with open(config_file, 'r') as ymlfile:
         config = yaml.load(ymlfile)
-        program_action(config, game, play_mode)
+
+        program_action(config)
 
 
 if __name__ == "__main__":

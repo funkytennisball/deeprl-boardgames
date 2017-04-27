@@ -1,0 +1,13 @@
+Game: 'cartpole'
+PlayMode: 'learn'
+ExplorationStrategy: 'egreedy'
+Episodes: 1000
+LearningRate: 0.01
+BatchSize: 64
+MemoryMaxSize: 100000
+DiscountRate: 0.9
+EpsilonMin: 0.1
+EpsilonDecay: 0.99
+ComputationalTemperature: 1
+RenderEnvironment: False
+SaveFile: 'cartpole.h5'

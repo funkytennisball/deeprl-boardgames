@@ -4,6 +4,6 @@ LearningRate: 0.03
 BatchSize: 256
 MemoryMaxSize: 100000
 InputDimension: 16
-DiscountRate: 0.95
+DiscountRate: 0.9
 RefreshRate: 0.2
 SaveFile: 'model.h5'

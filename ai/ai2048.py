@@ -1,7 +1,5 @@
 ''' AI wrapper for the game 2048 '''
 
-import time
-
 from games.game2048.game2048 import Game2048
 from agents.game2048_dqnagent import Game2048DQNAgent
 from .base_ai import BaseAI

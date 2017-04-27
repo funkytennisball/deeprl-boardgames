@@ -21,14 +21,10 @@ class Game2048DQNAgent(BaseAgent):
         """ Builds ANN """
         self.model = Sequential()
         self.model.add(
-            Dense(16, input_dim=self.input_dim, activation='linear'))
-        self.model.add(LeakyReLU(alpha=.001))
-        self.model.add(Dense(16, activation='linear'))
-        self.model.add(LeakyReLU(alpha=.001))
-        self.model.add(Dense(16, activation='linear'))
-        self.model.add(LeakyReLU(alpha=.001))
+            Dense(16, input_dim=self.input_dim, activation='relu'))
+        self.model.add(Dense(16, activation='relu'))
+        self.model.add(Dense(16, activation='relu'))
         self.model.add(Dense(self.output_dim, activation='linear'))
-        self.model.add(LeakyReLU(alpha=.001))
         self.model.compile(loss='mse', optimizer=Adam(
             lr=self.config['LearningRate']))
 
@@ -52,7 +48,7 @@ class Game2048DQNAgent(BaseAgent):
         if game_state == Game2048.GameState.ENDED:
             return score/1024
         else:
-            return score/512
+            return score/512 + 0.05
 
     def compute_target(self, reward, game_state, input_next_state):
         if game_state != Game2048.GameState.ENDED:
