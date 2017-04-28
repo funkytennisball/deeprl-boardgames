@@ -1,5 +1,7 @@
 ''' AI wrapper for the game 2048 '''
 
+import copy
+
 from games.game2048.game2048 import Game2048
 from agents.game2048_dqnagent import Game2048DQNAgent
 from .base_ai import BaseAI
@@ -43,47 +45,44 @@ class AI2048(BaseAI):
     def learn(self):
         ''' initiate ai learning '''
         self.env = Game2048()
+
         self.agent.build_model()
 
-        state, game_state = self.env.reset()
         batch_count = 0
         games = 0
         sum_score = 0
         max_tile = 0
-        generation_count = self.config['Generation']
 
-        for i in range(self.config['Episodes']):
+        episodes = self.config['Episodes']
+
+        for i in range(episodes):
+            # Resets game
+            state, game_state = self.env.reset()
+
             while game_state != Game2048.GameState.ENDED:
-                available_moves = [
-                    move.value for move in self.env.available_moves()]
+                action_space = self.env.available_moves()
+                available_moves = [move.value for move in action_space]
+
                 action, target = self.agent.act(state, available_moves)
                 game_action = Game2048.Action(action)
 
                 next_state, game_state, add_score = self.env.step(game_action)
 
                 if game_state == Game2048.GameState.ENDED:
-                    self.agent.remember(state, target, action,
-                                        next_state, self.env.game_score, game_state)
+                    endgame_score = self.env.game_score
+                    max_tile = self.env.get_max_tile()
+
+                    self.agent.remember(
+                        state, action, next_state, endgame_score, game_state)
+
+                    print('Epsiode: {:d} finished with score {:d} and max tile {:d}'.format(
+                        i, endgame_score, max_tile))
                 else:
-                    self.agent.remember(state, target, action,
-                                        next_state, add_score, game_state)
-                state = next_state
-                batch_count += 1
+                    self.agent.remember(
+                        state, action, next_state, add_score, game_state)
 
-            if game_state == Game2048.GameState.ENDED:
-                if (games - 1) % generation_count == 0:
-                    print('Generation: ' + str((games - 1) / generation_count) + '. Score attained: ' +
-                          str(sum_score / generation_count) + ' Max Tile: ' + str(max_tile))
-
-                    sum_score = 0
-                    max_tile = 0
-
-                games += 1
-                sum_score += self.env.game_score
-                max_tile = max(max_tile, self.env.get_max_tile())
-                state, game_state = self.env.reset()
+                state = copy.deepcopy(next_state)
 
                 self.agent.learn()
-            batch_count = 0
 
         self.agent.agent_save(self.get_model_filename())

@@ -47,6 +47,8 @@ def program_action(config):
         if play_mode == 'learn':
             ai_cartpole = AICartPole(config, True)
             ai_cartpole.learn()
+        else:
+            program_quit()
     else:
         program_quit()
 

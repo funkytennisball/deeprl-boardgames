@@ -2,12 +2,18 @@
 
 from abc import ABC, abstractmethod
 
+from interface.base_interface import BaseInterface
+
 
 class BaseAI(ABC):
     ''' AI base classes '''
 
     def __init__(self, config):
         self.config = config
+
+        self.interface_port = self.config['Interface']['Port']
+        self.interface = BaseInterface(self.interface_port)
+        self.interface.start()
 
     def get_model_filename(self):
         """ gets the file name of the saved model file """

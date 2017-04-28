@@ -1,0 +1,15 @@
+Game: '2048'
+PlayMode: 'aiplay'
+ExplorationStrategy: 'egreedy'
+Episodes: 10000
+LearningRate: 0.01
+BatchSize: 64
+MemoryMaxSize: 100000
+DiscountRate: 0.9
+EpsilonMin: 0.1
+EpsilonDecay: 0.999
+ComputationalTemperature: 1
+RenderEnvironment: False
+SaveFile: '2048.h5'
+Interface:
+  Port: 8053

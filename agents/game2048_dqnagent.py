@@ -2,7 +2,7 @@
 
 from keras.models import Sequential
 from keras.layers import Dense
-from keras.optimizers import Adam
+from keras.optimizers import Adam, RMSprop
 from keras.layers.advanced_activations import LeakyReLU
 
 import numpy as np
@@ -21,11 +21,11 @@ class Game2048DQNAgent(BaseAgent):
         """ Builds ANN """
         self.model = Sequential()
         self.model.add(
-            Dense(16, input_dim=self.input_dim, activation='relu'))
-        self.model.add(Dense(16, activation='relu'))
-        self.model.add(Dense(16, activation='relu'))
+            Dense(128, input_dim=self.input_dim, activation='tanh'))
+        self.model.add(Dense(128, activation='tanh'))
+        self.model.add(Dense(128, activation='tanh'))
         self.model.add(Dense(self.output_dim, activation='linear'))
-        self.model.compile(loss='mse', optimizer=Adam(
+        self.model.compile(loss='mse', optimizer=RMSprop(
             lr=self.config['LearningRate']))
 
     def act(self, state, available_moves):
@@ -34,25 +34,24 @@ class Game2048DQNAgent(BaseAgent):
 
         return super().act(conv_state, available_moves)
 
-    def remember(self, state, cur_scores, action, next_state, score, game_state):
+    def remember(self, state, action, next_state, score, game_state):
         curstate_max = max(state)
         nextstate_max = max(next_state)
 
         conv_curstate = [val / curstate_max for val in state]
         conv_nextstate = [val / nextstate_max for val in next_state]
 
-        super().remember(conv_curstate, cur_scores, action,
-                         conv_nextstate, score, game_state)
+        super().remember(conv_curstate, action, conv_nextstate, score, game_state)
 
     def get_reward(self, score, game_state):
         if game_state == Game2048.GameState.ENDED:
             return score/1024
         else:
-            return score/512 + 0.05
+            return 0
 
     def compute_target(self, reward, game_state, input_next_state):
         if game_state != Game2048.GameState.ENDED:
-            return reward + self.gamma * \
+            return reward + self.discount_rate * \
                 np.amax(self.model.predict(input_next_state)[0])
         else:
             return reward
